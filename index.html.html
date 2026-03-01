@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CAT POP ULTRA</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  height:100vh;
+  overflow:hidden;
+  font-family:Arial, sans-serif;
+  background:radial-gradient(circle,#f5e6c8,#d8c3a5);
+}
+
+/* ===== HUD ===== */
+#hud{
+  position:fixed;
+  top:10px;
+  left:50%;
+  transform:translateX(-50%);
+  text-align:center;
+  z-index:999;
+}
+#score{font-size:32px;font-weight:bold;}
+#combo{font-size:18px;}
+#stats,#high,#timer{font-size:14px;}
+
+/* ===== Cat ===== */
+#catContainer{
+  position:absolute;
+  width:90vw;
+  max-width:500px;
+}
+
+.cat-img{
+  width:100%;
+  height:auto;
+  border-radius:20px;
+  cursor:pointer;
+  transition:transform .1s;
+  animation:float 2s ease-in-out infinite;
+}
+
+/* ลอยขึ้นลง */
+@keyframes float{
+  0%{transform:translateY(0)}
+  50%{transform:translateY(-10px)}
+  100%{transform:translateY(0)}
+}
+
+/* สั่นตอนกด */
+.shake{animation:shake .2s;}
+@keyframes shake{
+  0%{transform:scale(1.2) rotate(0)}
+  25%{transform:scale(1.2) rotate(-5deg)}
+  50%{transform:scale(1.2) rotate(5deg)}
+  75%{transform:scale(1.2) rotate(-3deg)}
+  100%{transform:scale(1.2) rotate(0)}
+}
+</style>
+</head>
+
+<body>
+
+<div id="hud">
+  <div id="score">0</div>
+  <div id="combo">Combo x1</div>
+  <div id="stats">Clicks: 0</div>
+  <div id="high">High Score: 0</div>
+  <div id="timer">Time: 30</div>
+</div>
+
+<div id="catContainer">
+  <img src="cat.jpg" class="cat-img">
+</div>
+
+<script>
+let score=0;
+let combo=1;
+let clicks=0;
+let time=30;
+let interval;
+
+let high=localStorage.getItem("catHigh")||0;
+document.getElementById("high").textContent="High Score: "+high;
+
+const cat=document.querySelector(".cat-img");
+const container=document.getElementById("catContainer");
+const scoreText=document.getElementById("score");
+const comboText=document.getElementById("combo");
+const stats=document.getElementById("stats");
+const timerText=document.getElementById("timer");
+
+/* ===== สุ่มตำแหน่ง ===== */
+function randomPosition(){
+  const padding=10;
+  const maxX=window.innerWidth-container.offsetWidth-padding;
+  const maxY=window.innerHeight-container.offsetHeight-padding;
+  container.style.left=Math.random()*(maxX>0?maxX:0)+"px";
+  container.style.top=Math.random()*(maxY>0?maxY:0)+"px";
+}
+
+/* ===== เอฟเฟกต์อีโมจิ ===== */
+function funnyEffect(){
+  const emojis=["😂","🔥","💥","✨","😼","🎉"];
+  const span=document.createElement("span");
+  span.innerText=emojis[Math.floor(Math.random()*emojis.length)];
+  span.style.position="absolute";
+  span.style.left="50%";
+  span.style.top="50%";
+  span.style.fontSize="40px";
+  span.style.transform="translate(-50%,-50%)";
+  container.appendChild(span);
+  setTimeout(()=>span.remove(),500);
+}
+
+/* ===== คลิกแมว ===== */
+cat.addEventListener("click",()=>{
+  if(time<=0) return;
+
+  clicks++;
+  score+=combo;
+  combo++;
+
+  scoreText.textContent=score;
+  comboText.textContent="Combo x"+combo;
+  stats.textContent="Clicks: "+clicks;
+
+  cat.classList.add("shake");
+  setTimeout(()=>cat.classList.remove("shake"),200);
+
+  funnyEffect();
+  randomPosition();
+});
+
+/* ===== Timer ===== */
+function startTimer(){
+  interval=setInterval(()=>{
+    time--;
+    timerText.textContent="Time: "+time;
+
+    if(time<=0){
+      clearInterval(interval);
+      if(score>high){
+        high=score;
+        localStorage.setItem("catHigh",high);
+        document.getElementById("high").textContent="High Score: "+high;
+      }
+      combo=1;
+    }
+  },1000);
+}
+
+/* เริ่มเกม */
+randomPosition();
+startTimer();
+</script>
+
+</body>
+</html>
